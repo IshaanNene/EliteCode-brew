@@ -1,0 +1,59 @@
+# Node.js (nodejs/)
+nodejs/node_modules/
+nodejs/dist/
+nodejs/.env
+nodejs/.DS_Store
+nodejs/*.log
+
+# Go (golang/ and backend/)
+golang/bin/
+golang/pkg/
+golang/.DS_Store
+golang/*.log
+golang/*.test
+
+backend/bin/
+backend/.DS_Store
+backend/*.log
+backend/test_results/
+backend/coverage/
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Docker
+**/tmp/
+**/.cache/
+**/__pycache__/
+*.pid
+*.sock
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build Artifacts
+*.out
+*.exe
+*.dll
+*.so
+*.o
+*.a
+
+# Others
+.env
+.env.local
+.env.*.local
+
+nodejs/.env
+golang/.env
+backend/.env
