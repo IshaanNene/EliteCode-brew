@@ -1,1 +1,1 @@
-module elitecode-brew
+module github.com/IshaanNene/EliteCode-brew

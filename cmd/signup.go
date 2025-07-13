@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"EliteCode-brew/internal/auth"
 	"fmt"
+	"github.com/IshaanNene/EliteCode-brew/internal/auth"
 	"github.com/spf13/cobra"
 )
 
