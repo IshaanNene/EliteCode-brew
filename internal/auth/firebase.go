@@ -3,47 +3,43 @@ package auth
 import (
 	"cloud.google.com/go/firestore"
 	"context"
-	"firebase.google.com/go/v4/auth"
+	"firebase.google.com/go/v4"
 	"fmt"
-	"time"
+	"google.golang.org/api/option"
 )
 
-func SignupUser(name, email, username, password string) error {
+type FirebaseDB struct {
+	client *firestore.Client
+	ctx    context.Context
+}
+
+// NewFirebaseDB initializes Firebase connection
+func NewFirebaseDB(credentialsPath string) (*FirebaseDB, error) {
 	ctx := context.Background()
 
-	client, err := App.Auth(ctx)
+	opt := option.WithCredentialsFile(credentialsPath)
+	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("error initializing firebase app: %v", err)
 	}
 
-	params := (&auth.UserToCreate{}).
-		Email(email).
-		Password(password).
-		DisplayName(name)
-
-	user, err := client.CreateUser(ctx, params)
+	client, err := app.Firestore(ctx)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("error initializing firestore client: %v", err)
 	}
 
-	// Add profile to Firestore
-	firestoreClient, err := firestore.NewClient(ctx, App.ProjectID)
-	if err != nil {
-		return err
-	}
-	defer firestoreClient.Close()
+	return &FirebaseDB{
+		client: client,
+		ctx:    ctx,
+	}, nil
+}
 
-	userDoc := firestoreClient.Collection("users").Doc(user.UID)
-	_, err = userDoc.Set(ctx, map[string]interface{}{
-		"name":     name,
-		"email":    email,
-		"username": username,
-		"joinedAt": time.Now(),
-	})
-	if err != nil {
-		return err
-	}
+// Client exposes the Firestore client
+func (db *FirebaseDB) Client() *firestore.Client {
+	return db.client
+}
 
-	fmt.Println("User created successfully! type elitecode login or elitecode help")
-	return nil
+// Close closes the Firestore client connection
+func (db *FirebaseDB) Close() error {
+	return db.client.Close()
 }
