@@ -21,3 +21,11 @@ INFO: Detected HTTP/2 connection.
 Multiple projectIds are not recommended in single project mode. Requested project ID elitecode-47058, but the emulator is configured for brew-elitecode-store. To opt-out of single project mode add/set the '"singleProjectMode": false' property in the firebase.json emulators config.
 Jul 17, 2025 3:57:08 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
 INFO: Detected HTTP/2 connection.
+Jul 17, 2025 4:06:02 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+Jul 17, 2025 4:06:36 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+Jul 17, 2025 4:09:49 PM io.gapi.emulators.netty.HttpVersionRoutingHandler channelRead
+INFO: Detected HTTP/2 connection.
+*** shutting down gRPC server since JVM is shutting down
+*** server shut down
