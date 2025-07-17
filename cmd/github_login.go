@@ -8,7 +8,7 @@ import (
 
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
-	"github.com/yourusername/elitecode/internal/github"
+	"github.com/IshaanNene/EliteCode-brew/internal/github"
 )
 
 var githubLoginCmd = &cobra.Command{
@@ -20,7 +20,6 @@ The token needs the following scopes:
 - repo (Full control of private repositories)
 - workflow (Update GitHub Action workflows)`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Prompt for GitHub token
 		prompt := promptui.Prompt{
 			Label: "GitHub Token",
 			Mask:  '*',
@@ -37,20 +36,17 @@ The token needs the following scopes:
 			return fmt.Errorf("error getting token: %v", err)
 		}
 
-		// Validate token by creating a client
 		client, err := github.NewClient(token)
 		if err != nil {
 			return fmt.Errorf("error creating GitHub client: %v", err)
 		}
 
-		// Get user information to validate token
 		ctx := cmd.Context()
 		user, err := client.GetUser(ctx)
 		if err != nil {
 			return fmt.Errorf("error validating token: %v", err)
 		}
 
-		// Get config directory
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
 			return fmt.Errorf("error getting user home directory: %v", err)
@@ -61,7 +57,6 @@ The token needs the following scopes:
 			return fmt.Errorf("error creating config directory: %v", err)
 		}
 
-		// Read existing config
 		configFile := filepath.Join(configDir, "config.json")
 		var config map[string]interface{}
 
@@ -78,11 +73,9 @@ The token needs the following scopes:
 			config = make(map[string]interface{})
 		}
 
-		// Update config with GitHub token
 		config["github_token"] = token
 		config["github_username"] = user.GetLogin()
 
-		// Save config
 		configJSON, err := json.MarshalIndent(config, "", "  ")
 		if err != nil {
 			return fmt.Errorf("error marshaling config: %v", err)

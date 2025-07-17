@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/IshaanNene/EliteCode-brew/internal/problem"
+	"github.com/IshaanNene/EliteCode-brew/internal/utils"
 	"github.com/spf13/cobra"
-	"github.com/yourusername/elitecode/internal/problem"
-	"github.com/yourusername/elitecode/internal/utils"
 )
 
 var (
@@ -27,19 +27,15 @@ var setProblemCmd = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		problemID := args[0]
 
-		// Create problem service
 		problemService := problem.NewService(firebaseClient.Firestore)
 
-		// Get problem details
 		ctx := cmd.Context()
 		prob, err := problemService.GetProblem(ctx, problemID)
 		if err != nil {
 			return fmt.Errorf("error getting problem: %v", err)
 		}
 
-		// Validate language
 		if language == "" {
-			// Use first supported language as default
 			if len(prob.SupportedLangs) > 0 {
 				language = prob.SupportedLangs[0]
 			} else {
@@ -59,16 +55,16 @@ var setProblemCmd = &cobra.Command{
 			}
 		}
 
-		// Create problem directory
 		dirName := fmt.Sprintf("%s_%s", problemID, strings.ReplaceAll(strings.ToLower(prob.Title), " ", "_"))
 		if err := os.MkdirAll(dirName, 0755); err != nil {
 			return fmt.Errorf("error creating problem directory: %v", err)
 		}
 
-		// Download problem files from Firebase Storage
-		bucket := firebaseClient.Storage.Bucket(prob.StoragePaths.StarterCode)
+		bucket, err := firebaseClient.Storage.DefaultBucket()
+		if err != nil {
+			return fmt.Errorf("error getting default storage bucket: %v", err)
+		}
 
-		// Download starter code
 		starterCodePath := filepath.Join(prob.StoragePaths.StarterCode, language, "main."+utils.GetFileExtension(language))
 		starterCodeObj := bucket.Object(starterCodePath)
 		starterCodeReader, err := starterCodeObj.NewReader(ctx)
@@ -88,7 +84,6 @@ var setProblemCmd = &cobra.Command{
 			return fmt.Errorf("error writing starter code: %v", err)
 		}
 
-		// Download test cases
 		testCasesObj := bucket.Object(prob.StoragePaths.TestCases)
 		testCasesReader, err := testCasesObj.NewReader(ctx)
 		if err != nil {
@@ -107,7 +102,6 @@ var setProblemCmd = &cobra.Command{
 			return fmt.Errorf("error writing test cases: %v", err)
 		}
 
-		// Create metadata file
 		metadataFile := filepath.Join(dirName, "metadata.json")
 		if err := os.WriteFile(metadataFile, []byte(fmt.Sprintf(`{
 			"id": "%s",
@@ -119,7 +113,6 @@ var setProblemCmd = &cobra.Command{
 			return fmt.Errorf("error writing metadata file: %v", err)
 		}
 
-		// Download Dockerfile
 		dockerfileObj := bucket.Object(filepath.Join("docker_templates", language+".dockerfile"))
 		dockerfileReader, err := dockerfileObj.NewReader(ctx)
 		if err != nil {
@@ -147,6 +140,5 @@ var setProblemCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(setProblemCmd)
 
-	// Add flags
 	setProblemCmd.Flags().StringVarP(&language, "language", "l", "", "Programming language to use")
 }

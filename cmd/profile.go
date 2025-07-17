@@ -8,15 +8,13 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/yourusername/elitecode/internal/models"
+	"github.com/IshaanNene/EliteCode-brew/internal/models"
 )
 
-// formatTable formats a table with headers and rows
 func formatTable(headers []string, rows [][]string) string {
 	var sb strings.Builder
 	maxLengths := make([]int, len(headers))
 
-	// Calculate max lengths for each column
 	for i, header := range headers {
 		maxLengths[i] = len(header)
 	}
@@ -28,7 +26,6 @@ func formatTable(headers []string, rows [][]string) string {
 		}
 	}
 
-	// Print headers
 	for i, header := range headers {
 		if i > 0 {
 			sb.WriteString("  ")
@@ -37,7 +34,6 @@ func formatTable(headers []string, rows [][]string) string {
 	}
 	sb.WriteString("\n")
 
-	// Print separator
 	for i, length := range maxLengths {
 		if i > 0 {
 			sb.WriteString("  ")
@@ -46,7 +42,6 @@ func formatTable(headers []string, rows [][]string) string {
 	}
 	sb.WriteString("\n")
 
-	// Print rows
 	for _, row := range rows {
 		for i, cell := range row {
 			if i > 0 {
@@ -73,13 +68,11 @@ This includes:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 
-		// Get user ID from config
 		userID, err := getUserID()
 		if err != nil {
 			return err
 		}
 
-		// Get user profile
 		userDoc, err := firebaseClient.Firestore.Collection("users").Doc(userID).Get(ctx)
 		if err != nil {
 			return fmt.Errorf("error getting user profile: %v", err)
@@ -95,7 +88,6 @@ This includes:
 			return fmt.Errorf("error parsing user profile: %v", err)
 		}
 
-		// Get submission summaries
 		summariesSnap, err := firebaseClient.Firestore.Collection("users").Doc(userID).Collection("submission_summaries").Documents(ctx).GetAll()
 		if err != nil {
 			return fmt.Errorf("error getting submission summaries: %v", err)
@@ -110,7 +102,6 @@ This includes:
 			summaries = append(summaries, summary)
 		}
 
-		// Get problem details for each summary
 		problems := make(map[string]models.Problem)
 		for _, summary := range summaries {
 			if _, ok := problems[summary.ProblemID]; !ok {
@@ -126,21 +117,17 @@ This includes:
 			}
 		}
 
-		// Calculate statistics
 		stats := calculateStats(summaries, problems)
 
-		// Print user information
 		fmt.Printf("\nProfile: %s (%s)\n", user.DisplayName, user.Username)
 		fmt.Printf("Member since: %s\n", user.CreatedAt.Format("January 2, 2006"))
 		fmt.Println()
 
-		// Print problem statistics
 		fmt.Println("Problem Statistics:")
 		fmt.Printf("Total Solved: %d\n", stats.TotalSolved)
 		fmt.Printf("Success Rate: %.1f%%\n", stats.SuccessRate*100)
 		fmt.Println()
 
-		// Print difficulty distribution
 		fmt.Println("Difficulty Distribution:")
 		difficultyHeaders := []string{"Difficulty", "Solved", "Total", "Percentage"}
 		var difficultyRows [][]string
@@ -177,7 +164,6 @@ This includes:
 		fmt.Print(formatTable(difficultyHeaders, difficultyRows))
 		fmt.Println()
 
-		// Print language distribution
 		fmt.Println("Language Distribution:")
 		languageHeaders := []string{"Language", "Problems Solved", "Percentage"}
 		var languageRows [][]string
@@ -203,7 +189,6 @@ This includes:
 		fmt.Print(formatTable(languageHeaders, languageRows))
 		fmt.Println()
 
-		// Print recent activity
 		fmt.Println("Recent Activity:")
 		activityHeaders := []string{"Date", "Problem", "Status", "Language", "Time", "Memory"}
 		var activityRows [][]string

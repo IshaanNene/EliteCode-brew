@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/spf13/cobra"
-	"github.com/yourusername/elitecode/internal/auth"
+	"github.com/IshaanNene/EliteCode-brew/internal/auth"
 )
 
 var loginCmd = &cobra.Command{
@@ -15,7 +15,6 @@ var loginCmd = &cobra.Command{
 	Short: "Log in to your Elitecode account",
 	Long:  `Log in to your Elitecode account using your email and password.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Get user input
 		email, err := promptForInput("Email", validateEmail)
 		if err != nil {
 			return err
@@ -26,32 +25,27 @@ var loginCmd = &cobra.Command{
 			return err
 		}
 
-		// Sign in with email and password
 		ctx := cmd.Context()
 		user, err := auth.SignInWithEmailPassword(ctx, email, password)
 		if err != nil {
 			return fmt.Errorf("error authenticating: %v", err)
 		}
 
-		// Create custom token for the user
 		token, err := firebaseClient.Auth.CustomToken(ctx, user.UID)
 		if err != nil {
 			return fmt.Errorf("error creating token: %v", err)
 		}
 
-		// Get user's home directory
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
 			return fmt.Errorf("error getting user home directory: %v", err)
 		}
 
-		// Create .elitecode directory if it doesn't exist
 		configDir := filepath.Join(homeDir, ".elitecode")
 		if err := os.MkdirAll(configDir, 0755); err != nil {
 			return fmt.Errorf("error creating config directory: %v", err)
 		}
 
-		// Store token in config file
 		config := struct {
 			Token string `json:"token"`
 			Email string `json:"email"`

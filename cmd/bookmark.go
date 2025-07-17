@@ -6,8 +6,8 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/yourusername/elitecode/internal/models"
-	"github.com/yourusername/elitecode/internal/problem"
+	"github.com/IshaanNene/EliteCode-brew/internal/models"
+	"github.com/IshaanNene/EliteCode-brew/internal/problem"
 )
 
 var bookmarkCmd = &cobra.Command{
@@ -20,24 +20,19 @@ With a problem ID, toggles the bookmark status.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 
-		// Get user ID
 		userID, err := getUserID()
 		if err != nil {
 			return err
 		}
 
-		// Get problem service
 		problemService := problem.NewService(firebaseClient.Firestore)
 
-		// If no problem ID provided, list bookmarks
 		if len(args) == 0 {
-			// Get all problem statuses
 			statuses, err := problemService.GetUserProblemStatuses(ctx, userID)
 			if err != nil {
 				return fmt.Errorf("error getting problem statuses: %v", err)
 			}
 
-			// Filter bookmarked problems
 			var bookmarkedProblems []models.Problem
 			for _, status := range statuses {
 				if status.Bookmarked {
@@ -54,7 +49,6 @@ With a problem ID, toggles the bookmark status.`,
 				return nil
 			}
 
-			// Print bookmarked problems
 			fmt.Printf("Found %d bookmarked problems:\n", len(bookmarkedProblems))
 			headers := []string{"ID", "Title", "Difficulty", "Tags", "Status"}
 			var rows [][]string
@@ -65,7 +59,6 @@ With a problem ID, toggles the bookmark status.`,
 					return fmt.Errorf("error getting problem status: %v", err)
 				}
 
-				// Format status
 				var statusStr string
 				if status.SubmissionSummary != nil && status.SubmissionSummary.Solved {
 					statusStr = color.GreenString("Solved")
@@ -89,22 +82,18 @@ With a problem ID, toggles the bookmark status.`,
 			return nil
 		}
 
-		// Toggle bookmark for the specified problem
 		problemID := args[0]
 
-		// Get current status
 		status, err := problemService.GetUserProblemStatus(ctx, userID, problemID)
 		if err != nil {
 			return fmt.Errorf("error getting problem status: %v", err)
 		}
 
-		// Get problem details
 		prob, err := problemService.GetProblem(ctx, problemID)
 		if err != nil {
 			return fmt.Errorf("error getting problem: %v", err)
 		}
 
-		// Create status if it doesn't exist
 		if status == nil {
 			status = &models.UserProblemStatus{
 				UserID:    userID,
@@ -112,10 +101,8 @@ With a problem ID, toggles the bookmark status.`,
 			}
 		}
 
-		// Toggle bookmark
 		status.Bookmarked = !status.Bookmarked
 
-		// Save status
 		if err := problemService.SaveUserProblemStatus(ctx, status); err != nil {
 			return fmt.Errorf("error saving problem status: %v", err)
 		}

@@ -10,11 +10,8 @@ import (
 )
 
 var (
-	// Version is the current version of Elitecode CLI
 	Version = "0.1.0"
-	// GitCommit is the git commit hash
 	GitCommit = "unknown"
-	// BuildDate is the date when the binary was built
 	BuildDate = "unknown"
 )
 

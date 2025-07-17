@@ -18,7 +18,6 @@ var signupCmd = &cobra.Command{
 - Email
 - Password`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Get user input
 		name, err := promptForInput("Name", validateName)
 		if err != nil {
 			return err
@@ -49,7 +48,6 @@ var signupCmd = &cobra.Command{
 			return err
 		}
 
-		// Create user in Firebase
 		ctx := cmd.Context()
 		params := (&auth.UserToCreate{}).
 			Email(email).
@@ -61,7 +59,6 @@ var signupCmd = &cobra.Command{
 			return fmt.Errorf("error creating user: %v", err)
 		}
 
-		// Store additional user data in Firestore
 		userDoc := map[string]interface{}{
 			"username":    username,
 			"email":       email,
@@ -71,7 +68,6 @@ var signupCmd = &cobra.Command{
 
 		_, err = firebaseClient.Firestore.Collection("users").Doc(user.UID).Set(ctx, userDoc)
 		if err != nil {
-			// Try to delete the created user if Firestore update fails
 			if delErr := firebaseClient.Auth.DeleteUser(ctx, user.UID); delErr != nil {
 				return fmt.Errorf("error creating user profile and failed to rollback: %v, %v", err, delErr)
 			}

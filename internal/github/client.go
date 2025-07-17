@@ -14,14 +14,12 @@ import (
 	"golang.org/x/oauth2"
 )
 
-// Client wraps the GitHub client with additional functionality
 type Client struct {
 	client *github.Client
 	owner  string
 	repo   string
 }
 
-// NewClient creates a new GitHub client
 func NewClient(token string) (*Client, error) {
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
@@ -34,7 +32,6 @@ func NewClient(token string) (*Client, error) {
 	}, nil
 }
 
-// GetUser gets the authenticated user's information
 func (c *Client) GetUser(ctx context.Context) (*github.User, error) {
 	user, _, err := c.client.Users.Get(ctx, "")
 	if err != nil {
@@ -43,13 +40,11 @@ func (c *Client) GetUser(ctx context.Context) (*github.User, error) {
 	return user, nil
 }
 
-// SetRepository sets the owner and repository for the client
 func (c *Client) SetRepository(owner, repo string) {
 	c.owner = owner
 	c.repo = repo
 }
 
-// CreateRepository creates a new GitHub repository
 func (c *Client) CreateRepository(ctx context.Context, name string, description string, private bool) (*github.Repository, error) {
 	repo := &github.Repository{
 		Name:        github.String(name),
@@ -66,7 +61,6 @@ func (c *Client) CreateRepository(ctx context.Context, name string, description 
 	return repository, nil
 }
 
-// GetRepository gets the repository information
 func (c *Client) GetRepository(ctx context.Context) (*github.Repository, error) {
 	repo, _, err := c.client.Repositories.Get(ctx, c.owner, c.repo)
 	if err != nil {
@@ -76,7 +70,6 @@ func (c *Client) GetRepository(ctx context.Context) (*github.Repository, error) 
 	return repo, nil
 }
 
-// CreatePullRequest creates a new pull request
 func (c *Client) CreatePullRequest(ctx context.Context, title, body, head, base string) (*github.PullRequest, error) {
 	newPR := &github.NewPullRequest{
 		Title: github.String(title),
@@ -93,7 +86,6 @@ func (c *Client) CreatePullRequest(ctx context.Context, title, body, head, base 
 	return pr, nil
 }
 
-// CreateIssue creates a new issue
 func (c *Client) CreateIssue(ctx context.Context, title, body string, labels []string) (*github.Issue, error) {
 	issue := &github.IssueRequest{
 		Title:  github.String(title),
@@ -109,11 +101,9 @@ func (c *Client) CreateIssue(ctx context.Context, title, body string, labels []s
 	return newIssue, nil
 }
 
-// GetProblemBranch gets or creates a branch for a problem
 func (c *Client) GetProblemBranch(ctx context.Context, problemID string) (string, error) {
 	branchName := fmt.Sprintf("problem/%s", problemID)
 
-	// Get default branch
 	repo, err := c.GetRepository(ctx)
 	if err != nil {
 		return "", err
@@ -121,20 +111,16 @@ func (c *Client) GetProblemBranch(ctx context.Context, problemID string) (string
 
 	defaultBranch := repo.GetDefaultBranch()
 
-	// Get default branch reference
 	ref, _, err := c.client.Git.GetRef(ctx, c.owner, c.repo, "refs/heads/"+defaultBranch)
 	if err != nil {
 		return "", fmt.Errorf("error getting default branch ref: %v", err)
 	}
 
-	// Check if problem branch exists
 	_, _, err = c.client.Git.GetRef(ctx, c.owner, c.repo, "refs/heads/"+branchName)
 	if err == nil {
-		// Branch exists
 		return branchName, nil
 	}
 
-	// Create new branch
 	newRef := &github.Reference{
 		Ref:    github.String("refs/heads/" + branchName),
 		Object: &github.GitObject{SHA: ref.Object.SHA},
@@ -148,27 +134,22 @@ func (c *Client) GetProblemBranch(ctx context.Context, problemID string) (string
 	return branchName, nil
 }
 
-// CommitSolution commits a solution to a problem
 func (c *Client) CommitSolution(ctx context.Context, problemID, title string, files map[string][]byte) error {
-	// Get problem branch
 	branch, err := c.GetProblemBranch(ctx, problemID)
 	if err != nil {
 		return err
 	}
 
-	// Get branch reference
 	ref, _, err := c.client.Git.GetRef(ctx, c.owner, c.repo, "refs/heads/"+branch)
 	if err != nil {
 		return fmt.Errorf("error getting branch ref: %v", err)
 	}
 
-	// Get base tree
 	baseTree, _, err := c.client.Git.GetTree(ctx, c.owner, c.repo, *ref.Object.SHA, false)
 	if err != nil {
 		return fmt.Errorf("error getting base tree: %v", err)
 	}
 
-	// Create blobs for each file
 	var entries []*github.TreeEntry
 	for path, content := range files {
 		blob := &github.Blob{
@@ -189,19 +170,16 @@ func (c *Client) CommitSolution(ctx context.Context, problemID, title string, fi
 		})
 	}
 
-	// Create new tree
 	tree, _, err := c.client.Git.CreateTree(ctx, c.owner, c.repo, *baseTree.SHA, entries)
 	if err != nil {
 		return fmt.Errorf("error creating tree: %v", err)
 	}
 
-	// Get parent commit
 	parent, _, err := c.client.Git.GetCommit(ctx, c.owner, c.repo, *ref.Object.SHA)
 	if err != nil {
 		return fmt.Errorf("error getting parent commit: %v", err)
 	}
 
-	// Create commit
 	now := github.Timestamp{Time: time.Now()}
 	author := &github.CommitAuthor{
 		Date:  &now,
@@ -221,7 +199,6 @@ func (c *Client) CommitSolution(ctx context.Context, problemID, title string, fi
 		return fmt.Errorf("error creating commit: %v", err)
 	}
 
-	// Update branch reference
 	ref.Object.SHA = newCommit.SHA
 	_, _, err = c.client.Git.UpdateRef(ctx, c.owner, c.repo, ref, false)
 	if err != nil {
@@ -231,7 +208,6 @@ func (c *Client) CommitSolution(ctx context.Context, problemID, title string, fi
 	return nil
 }
 
-// GetGitHubToken gets the GitHub token from the config file
 func GetGitHubToken() (string, error) {
 	configFile := filepath.Join(os.Getenv("HOME"), ".elitecode", "config.json")
 	configBytes, err := os.ReadFile(configFile)
@@ -253,20 +229,16 @@ func GetGitHubToken() (string, error) {
 	return config.GitHubToken, nil
 }
 
-// GetRepositoryInfo gets the repository owner and name from the git config
 func GetRepositoryInfo() (owner, repo string, err error) {
-	// Run git remote -v
 	cmd := exec.Command("git", "remote", "get-url", "origin")
 	output, err := cmd.Output()
 	if err != nil {
 		return "", "", fmt.Errorf("error getting git remote: %v", err)
 	}
 
-	// Parse remote URL
 	remoteURL := strings.TrimSpace(string(output))
 	remoteURL = strings.TrimSuffix(remoteURL, ".git")
 
-	// Handle SSH and HTTPS URLs
 	var parts []string
 	if strings.HasPrefix(remoteURL, "git@github.com:") {
 		parts = strings.Split(strings.TrimPrefix(remoteURL, "git@github.com:"), "/")

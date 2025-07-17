@@ -15,12 +15,10 @@ import (
 	"github.com/docker/docker/client"
 )
 
-// Client wraps the Docker client with additional functionality
 type Client struct {
 	*client.Client
 }
 
-// NewClient creates a new Docker client
 func NewClient() (*Client, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
@@ -29,21 +27,17 @@ func NewClient() (*Client, error) {
 	return &Client{cli}, nil
 }
 
-// RunContainer runs a container with the given configuration and returns its output
 func (c *Client) RunContainer(ctx context.Context, config *container.Config, hostConfig *container.HostConfig, name string) (output []byte, executionTime time.Duration, memoryUsage float64, err error) {
-	// Create container
 	createResp, err := c.ContainerCreate(ctx, config, hostConfig, nil, nil, name)
 	if err != nil {
 		return nil, 0, 0, fmt.Errorf("error creating container: %v", err)
 	}
 
-	// Start container
 	startTime := time.Now()
 	if err := c.ContainerStart(ctx, createResp.ID, types.ContainerStartOptions{}); err != nil {
 		return nil, 0, 0, fmt.Errorf("error starting container: %v", err)
 	}
 
-	// Wait for container to finish
 	statusCh, errCh := c.ContainerWait(ctx, createResp.ID, container.WaitConditionNotRunning)
 	select {
 	case err := <-errCh:
@@ -53,7 +47,6 @@ func (c *Client) RunContainer(ctx context.Context, config *container.Config, hos
 	case <-statusCh:
 	}
 
-	// Get container logs
 	logs, err := c.ContainerLogs(ctx, createResp.ID, types.ContainerLogsOptions{
 		ShowStdout: true,
 		ShowStderr: true,
@@ -63,13 +56,11 @@ func (c *Client) RunContainer(ctx context.Context, config *container.Config, hos
 	}
 	defer logs.Close()
 
-	// Read logs
 	output, err = io.ReadAll(logs)
 	if err != nil {
 		return nil, 0, 0, fmt.Errorf("error reading logs: %v", err)
 	}
 
-	// Get container stats
 	stats, err := c.ContainerStats(ctx, createResp.ID, false)
 	if err != nil {
 		return nil, 0, 0, fmt.Errorf("error getting container stats: %v", err)
@@ -81,11 +72,9 @@ func (c *Client) RunContainer(ctx context.Context, config *container.Config, hos
 		return nil, 0, 0, fmt.Errorf("error decoding stats: %v", err)
 	}
 
-	// Calculate metrics
 	executionTime = time.Since(startTime)
 	memoryUsage = float64(statsJSON.MemoryStats.Usage) / 1024 / 1024 // Convert to MB
 
-	// Clean up container
 	if err := c.ContainerRemove(ctx, createResp.ID, types.ContainerRemoveOptions{
 		Force: true,
 	}); err != nil {
@@ -95,7 +84,6 @@ func (c *Client) RunContainer(ctx context.Context, config *container.Config, hos
 	return output, executionTime, memoryUsage, nil
 }
 
-// BuildImage builds a Docker image from a tar context
 func (c *Client) BuildImage(ctx context.Context, buildCtx io.Reader, options types.ImageBuildOptions) error {
 	buildResponse, err := c.ImageBuild(ctx, buildCtx, options)
 	if err != nil {
@@ -103,7 +91,6 @@ func (c *Client) BuildImage(ctx context.Context, buildCtx io.Reader, options typ
 	}
 	defer buildResponse.Body.Close()
 
-	// Print build output
 	if _, err := io.Copy(os.Stdout, buildResponse.Body); err != nil {
 		return fmt.Errorf("error reading build output: %v", err)
 	}
@@ -111,7 +98,6 @@ func (c *Client) BuildImage(ctx context.Context, buildCtx io.Reader, options typ
 	return nil
 }
 
-// CreateBuildContext creates a tar archive containing the files needed to build a Docker image
 func CreateBuildContext(files map[string][]byte) (io.Reader, error) {
 	buildCtx := new(bytes.Buffer)
 	tw := tar.NewWriter(buildCtx)

@@ -10,10 +10,10 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/yourusername/elitecode/internal/docker"
-	"github.com/yourusername/elitecode/internal/models"
-	"github.com/yourusername/elitecode/internal/problem"
-	"github.com/yourusername/elitecode/internal/utils"
+	"github.com/IshaanNene/EliteCode-brew/internal/docker"
+	"github.com/IshaanNene/EliteCode-brew/internal/models"
+	"github.com/IshaanNene/EliteCode-brew/internal/problem"
+	"github.com/IshaanNene/EliteCode-brew/internal/utils"
 )
 
 var submitCmd = &cobra.Command{
@@ -25,13 +25,11 @@ This will:
 2. Check for correctness, time limit, and memory usage
 3. Update your submission history`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Get current directory
 		wd, err := os.Getwd()
 		if err != nil {
 			return fmt.Errorf("error getting working directory: %v", err)
 		}
 
-		// Read metadata file
 		metadataBytes, err := os.ReadFile(filepath.Join(wd, "metadata.json"))
 		if err != nil {
 			return fmt.Errorf("error reading metadata file: %v", err)
@@ -48,13 +46,11 @@ This will:
 			return fmt.Errorf("error parsing metadata: %v", err)
 		}
 
-		// Read source code
 		sourceCode, err := os.ReadFile(filepath.Join(wd, "main."+utils.GetFileExtension(meta.Language)))
 		if err != nil {
 			return fmt.Errorf("error reading source code: %v", err)
 		}
 
-		// Initialize services
 		dockerClient, err := docker.NewClient()
 		if err != nil {
 			return fmt.Errorf("error creating Docker client: %v", err)
@@ -64,7 +60,6 @@ This will:
 		problemService := problem.NewService(firebaseClient.Firestore)
 		submissionService := problem.NewSubmissionService(firebaseClient.Firestore, dockerClient, problemService)
 
-		// Get user ID from config
 		configFile := filepath.Join(os.Getenv("HOME"), ".elitecode", "config.json")
 		configBytes, err := os.ReadFile(configFile)
 		if err != nil {
@@ -82,7 +77,6 @@ This will:
 			return fmt.Errorf("not logged in. Please run 'elitecode login' first")
 		}
 
-		// Submit solution
 		fmt.Println("Submitting your solution...")
 		startTime := time.Now()
 
@@ -91,16 +85,13 @@ This will:
 			return fmt.Errorf("error submitting solution: %v", err)
 		}
 
-		// Print results
 		fmt.Println("\nResults:")
 		fmt.Println("----------------------------------------")
 
-		// Print test case results
 		passedTests := 0
 		for i, tc := range submission.TestCases {
 			fmt.Printf("Test Case %d: ", i+1)
 
-			// Check if test case is hidden (test case ID starts with "hidden_")
 			isHidden := strings.HasPrefix(tc.TestCaseID, "hidden_")
 
 			switch tc.Status {
@@ -127,7 +118,6 @@ This will:
 
 		fmt.Println("----------------------------------------")
 
-		// Print summary
 		fmt.Printf("\nTest Cases: %d/%d passed\n", passedTests, len(submission.TestCases))
 		fmt.Printf("Average Time: %dms\n", submission.ExecutionTime)
 		fmt.Printf("Peak Memory: %.2fMB\n", float64(submission.MemoryUsed)/1024)

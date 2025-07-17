@@ -7,8 +7,8 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"github.com/yourusername/elitecode/internal/models"
-	"github.com/yourusername/elitecode/internal/problem"
+	"github.com/IshaanNene/EliteCode-brew/internal/models"
+	"github.com/IshaanNene/EliteCode-brew/internal/problem"
 )
 
 var (
@@ -26,10 +26,8 @@ You can filter by:
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ctx := cmd.Context()
 
-		// Get problem service
 		problemService := problem.NewService(firebaseClient.Firestore)
 
-		// Calculate time range
 		var startTime time.Time
 		switch timeRange {
 		case "year":
@@ -40,17 +38,14 @@ You can filter by:
 			startTime = time.Now().AddDate(0, 0, -7)
 		}
 
-		// Get rankings
 		var rankings []models.UserRanking
 		var err error
 		if problemFilter != "" {
-			// Get problem-specific rankings
 			rankings, err = problemService.GetProblemRankings(ctx, problemFilter, startTime)
 			if err != nil {
 				return fmt.Errorf("error getting problem rankings: %v", err)
 			}
 
-			// Get problem details
 			prob, err := problemService.GetProblem(ctx, problemFilter)
 			if err != nil {
 				return fmt.Errorf("error getting problem: %v", err)
@@ -60,7 +55,6 @@ You can filter by:
 			fmt.Printf("Difficulty: %s\n", formatDifficulty(prob.Difficulty))
 			fmt.Printf("Tags: %s\n", strings.Join(prob.Tags, ", "))
 		} else {
-			// Get global rankings
 			rankings, err = problemService.GetGlobalRankings(ctx, startTime)
 			if err != nil {
 				return fmt.Errorf("error getting global rankings: %v", err)
@@ -78,12 +72,10 @@ You can filter by:
 			return nil
 		}
 
-		// Print rankings
 		headers := []string{"Rank", "User", "Score", "Problems Solved", "Avg Time", "Avg Memory"}
 		var rows [][]string
 
 		for i, ranking := range rankings {
-			// Format rank with medal for top 3
 			rank := fmt.Sprintf("%d", i+1)
 			switch i {
 			case 0:
@@ -94,7 +86,6 @@ You can filter by:
 				rank = "🥉 " + rank
 			}
 
-			// Format metrics
 			avgTime := float64(ranking.TotalTime) / float64(ranking.ProblemsSolved)
 			avgMemory := float64(ranking.TotalMemory) / float64(ranking.ProblemsSolved) / 1024 // Convert to MB
 
@@ -107,7 +98,6 @@ You can filter by:
 				fmt.Sprintf("%.2fMB", avgMemory),
 			}
 
-			// Highlight current user
 			userID, _ := getUserID()
 			if ranking.UserID == userID {
 				for i := range row {
@@ -127,7 +117,6 @@ You can filter by:
 func init() {
 	rootCmd.AddCommand(leaderboardCmd)
 
-	// Add flags
 	leaderboardCmd.Flags().StringVarP(&timeRange, "time", "t", "all", "Time range (all, year, month, week)")
 	leaderboardCmd.Flags().StringVarP(&problemFilter, "problem", "p", "", "Filter by problem ID")
 }

@@ -5,9 +5,25 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"github.com/IshaanNene/EliteCode-brew/internal/models"
+	"github.com/fatih/color"
 )
 
-// getUserID gets the user ID from the config file
+func formatDifficulty(difficulty models.Difficulty) string {
+	switch strings.ToLower(string(difficulty)) {
+	case "easy":
+		return color.GreenString("Easy")
+	case "medium":
+		return color.YellowString("Medium")
+	case "hard":
+		return color.RedString("Hard")
+	default:
+		return string(difficulty)
+	}
+}
+
 func getUserID() (string, error) {
 	configFile := filepath.Join(os.Getenv("HOME"), ".elitecode", "config.json")
 	configBytes, err := os.ReadFile(configFile)

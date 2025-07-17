@@ -9,20 +9,18 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/google/uuid"
-	"github.com/yourusername/elitecode/internal/docker"
-	"github.com/yourusername/elitecode/internal/models"
+	"github.com/IshaanNene/EliteCode-brew/internal/docker"
+	"github.com/IshaanNene/EliteCode-brew/internal/models"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-// SubmissionService handles submission-related operations
 type SubmissionService struct {
 	firestoreClient *firestore.Client
 	dockerClient    *docker.Client
 	problemService  *Service
 }
 
-// NewSubmissionService creates a new submission service
 func NewSubmissionService(firestoreClient *firestore.Client, dockerClient *docker.Client, problemService *Service) *SubmissionService {
 	return &SubmissionService{
 		firestoreClient: firestoreClient,
@@ -31,15 +29,12 @@ func NewSubmissionService(firestoreClient *firestore.Client, dockerClient *docke
 	}
 }
 
-// Submit submits a solution for evaluation
 func (s *SubmissionService) Submit(ctx context.Context, userID string, problemID string, code string, language string) (*models.Submission, error) {
-	// Get problem details
 	problem, err := s.problemService.GetProblem(ctx, problemID)
 	if err != nil {
 		return nil, fmt.Errorf("error getting problem: %v", err)
 	}
 
-	// Create submission record
 	submission := &models.Submission{
 		ID:          uuid.New().String(),
 		UserID:      userID,
@@ -50,13 +45,11 @@ func (s *SubmissionService) Submit(ctx context.Context, userID string, problemID
 		SubmittedAt: time.Now(),
 	}
 
-	// Save initial submission
 	_, err = s.firestoreClient.Collection("submissions").Doc(submission.ID).Set(ctx, submission)
 	if err != nil {
 		return nil, fmt.Errorf("error saving submission: %v", err)
 	}
 
-	// Get test cases
 	testCasesSnap, err := s.firestoreClient.Collection("problems").Doc(problemID).Collection("test_cases").Documents(ctx).GetAll()
 	if err != nil {
 		return nil, fmt.Errorf("error getting test cases: %v", err)
@@ -72,14 +65,12 @@ func (s *SubmissionService) Submit(ctx context.Context, userID string, problemID
 		testCases = append(testCases, tc)
 	}
 
-	// Update submission status
 	submission.Status = models.StatusRunning
 	_, err = s.firestoreClient.Collection("submissions").Doc(submission.ID).Set(ctx, submission)
 	if err != nil {
 		return nil, fmt.Errorf("error updating submission status: %v", err)
 	}
 
-	// Run test cases
 	var totalTime int64
 	var maxMemory int64
 	var failedTests int
@@ -91,14 +82,12 @@ func (s *SubmissionService) Submit(ctx context.Context, userID string, problemID
 			Status:     models.StatusRunning,
 		}
 
-		// Run test case
 		output, execTime, memUsed, err := s.runTestCase(ctx, code, language, tc.Input, problem.TimeLimit, problem.MemoryLimit)
 		if err != nil {
 			result.Status = models.StatusError
 			result.ErrorMessage = err.Error()
 			failedTests++
 		} else {
-			// Update metrics
 			result.ExecutionTime = execTime.Milliseconds()
 			result.MemoryUsed = int64(memUsed * 1024) // Convert MB to KB
 			totalTime += result.ExecutionTime
@@ -106,7 +95,6 @@ func (s *SubmissionService) Submit(ctx context.Context, userID string, problemID
 				maxMemory = result.MemoryUsed
 			}
 
-			// Check time limit
 			if result.ExecutionTime > int64(problem.TimeLimit) {
 				result.Status = models.StatusTimeLimitExceeded
 				failedTests++
@@ -114,7 +102,6 @@ func (s *SubmissionService) Submit(ctx context.Context, userID string, problemID
 				result.Status = models.StatusMemoryLimitExceeded
 				failedTests++
 			} else {
-				// Compare output
 				result.ExpectedOutput = tc.Expected
 				result.ActualOutput = output
 				if output == tc.Expected {
@@ -129,7 +116,6 @@ func (s *SubmissionService) Submit(ctx context.Context, userID string, problemID
 		submission.TestCases[i] = result
 	}
 
-	// Update final submission status
 	submission.CompletedAt = time.Now()
 	submission.ExecutionTime = totalTime / int64(len(testCases)) // Average time
 	submission.MemoryUsed = maxMemory
@@ -140,13 +126,11 @@ func (s *SubmissionService) Submit(ctx context.Context, userID string, problemID
 		submission.Status = models.StatusRejected
 	}
 
-	// Save final submission
 	_, err = s.firestoreClient.Collection("submissions").Doc(submission.ID).Set(ctx, submission)
 	if err != nil {
 		return nil, fmt.Errorf("error saving final submission: %v", err)
 	}
 
-	// Update user's submission summary
 	if err := s.updateSubmissionSummary(ctx, userID, problemID, submission); err != nil {
 		return nil, fmt.Errorf("error updating submission summary: %v", err)
 	}
@@ -154,9 +138,7 @@ func (s *SubmissionService) Submit(ctx context.Context, userID string, problemID
 	return submission, nil
 }
 
-// runTestCase runs a single test case in a Docker container
 func (s *SubmissionService) runTestCase(ctx context.Context, code string, language string, input string, timeLimit int, memoryLimit int) (string, time.Duration, float64, error) {
-	// Create Docker build context with code
 	files := map[string][]byte{
 		"code":      []byte(code),
 		"input.txt": []byte(input),
@@ -167,7 +149,6 @@ func (s *SubmissionService) runTestCase(ctx context.Context, code string, langua
 		return "", 0, 0, fmt.Errorf("error creating build context: %v", err)
 	}
 
-	// Build Docker image
 	imageName := fmt.Sprintf("elitecode/submission:%s", uuid.New().String())
 	buildOptions := types.ImageBuildOptions{
 		Dockerfile: "Dockerfile",
@@ -179,7 +160,6 @@ func (s *SubmissionService) runTestCase(ctx context.Context, code string, langua
 		return "", 0, 0, fmt.Errorf("error building Docker image: %v", err)
 	}
 
-	// Run container
 	containerConfig := &container.Config{
 		Image: imageName,
 		Cmd:   []string{"./run.sh"},
@@ -202,7 +182,6 @@ func (s *SubmissionService) runTestCase(ctx context.Context, code string, langua
 	return string(output), execTime, memUsed, nil
 }
 
-// updateSubmissionSummary updates the user's submission summary for a problem
 func (s *SubmissionService) updateSubmissionSummary(ctx context.Context, userID string, problemID string, submission *models.Submission) error {
 	summaryRef := s.firestoreClient.Collection("users").Doc(userID).Collection("submission_summaries").Doc(problemID)
 
@@ -219,7 +198,6 @@ func (s *SubmissionService) updateSubmissionSummary(ctx context.Context, userID 
 			}
 		}
 
-		// Update summary
 		summary.ProblemID = problemID
 		summary.LastSubmissionID = submission.ID
 		summary.AttemptCount++

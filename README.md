@@ -1,16 +1,6 @@
 # Elitecode CLI
 
-A comprehensive coding practice platform that helps you improve your programming skills through interactive problem-solving.
-
-## Features
-
-- 🔍 Browse and search coding problems
-- 📝 Submit solutions in multiple programming languages
-- 🐳 Secure code execution in Docker containers
-- 📊 Track your progress and statistics
-- 🏆 Compete on the leaderboard
-- 🔄 Sync solutions with GitHub
-- 📱 Cross-platform support
+brew formula for the elitecode website
 
 ## Installation
 
@@ -22,22 +12,30 @@ A comprehensive coding practice platform that helps you improve your programming
 
 ### From Source
 
+1. Clone the repository:
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/elitecode.git
-cd elitecode
+git clone https://github.com/IshaanNene/EliteCode-brew.git
+```
 
-# Build the binary
+2. Navigate to the cloned directory:
+```bash
+cd EliteCode-brew
+```
+
+3. Build the binary:
+```bash
 go build -o elitecode
+```
 
-# Install globally
+4. Install globally:
+```bash
 sudo mv elitecode /usr/local/bin/
 ```
 
 ### Using Go Install
 
 ```bash
-go install github.com/yourusername/elitecode@latest
+go install github.com/IshaanNene/EliteCode-brew@latest
 ```
 
 ## Quick Start

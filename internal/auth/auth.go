@@ -16,15 +16,12 @@ const (
 	defaultHost      = "localhost:9099"
 )
 
-// SignInWithEmailPassword signs in a user with email and password using the Firebase Auth REST API
 func SignInWithEmailPassword(ctx context.Context, email, password string) (*auth.UserRecord, error) {
-	// Check if we're using the emulator
 	emulatorHost := os.Getenv(authEmulatorHost)
 	if emulatorHost == "" {
 		emulatorHost = defaultHost
 	}
 
-	// Prepare the sign-in request
 	reqBody := map[string]string{
 		"email":    email,
 		"password": password,
@@ -34,7 +31,6 @@ func SignInWithEmailPassword(ctx context.Context, email, password string) (*auth
 		return nil, fmt.Errorf("error marshaling request: %v", err)
 	}
 
-	// Make the request to the emulator
 	url := fmt.Sprintf("http://%s/identitytoolkit.googleapis.com/v1/accounts:signInWithPassword", emulatorHost)
 	resp, err := http.Post(url, "application/json", strings.NewReader(string(reqJSON)))
 	if err != nil {
@@ -54,7 +50,6 @@ func SignInWithEmailPassword(ctx context.Context, email, password string) (*auth
 		return nil, fmt.Errorf("error decoding response: %v", err)
 	}
 
-	// Create a UserRecord from the response
 	return &auth.UserRecord{
 		UserInfo: &auth.UserInfo{
 			UID:   result.LocalID,

@@ -10,8 +10,8 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/spf13/cobra"
-	"github.com/yourusername/elitecode/internal/docker"
-	"github.com/yourusername/elitecode/internal/utils"
+	"github.com/IshaanNene/EliteCode-brew/internal/docker"
+	"github.com/IshaanNene/EliteCode-brew/internal/utils"
 )
 
 type metadata struct {
@@ -31,13 +31,11 @@ This will:
 2. Run the code with sample test cases
 3. Show execution time and memory usage`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Get current directory
 		wd, err := os.Getwd()
 		if err != nil {
 			return fmt.Errorf("error getting working directory: %v", err)
 		}
 
-		// Read metadata file
 		metadataBytes, err := os.ReadFile(filepath.Join(wd, "metadata.json"))
 		if err != nil {
 			return fmt.Errorf("error reading metadata file: %v", err)
@@ -48,14 +46,12 @@ This will:
 			return fmt.Errorf("error parsing metadata: %v", err)
 		}
 
-		// Initialize Docker client
 		dockerClient, err := docker.NewClient()
 		if err != nil {
 			return fmt.Errorf("error creating Docker client: %v", err)
 		}
 		defer dockerClient.Close()
 
-		// Read files for build context
 		dockerfile, err := os.ReadFile(filepath.Join(wd, "Dockerfile"))
 		if err != nil {
 			return fmt.Errorf("error reading Dockerfile: %v", err)
@@ -66,7 +62,6 @@ This will:
 			return fmt.Errorf("error reading source code: %v", err)
 		}
 
-		// Create build context
 		files := map[string][]byte{
 			"Dockerfile": dockerfile,
 			"main." + utils.GetFileExtension(meta.Language): sourceCode,
@@ -77,7 +72,6 @@ This will:
 			return fmt.Errorf("error creating build context: %v", err)
 		}
 
-		// Build Docker image
 		fmt.Println("Building Docker image...")
 		buildOptions := types.ImageBuildOptions{
 			Dockerfile: "Dockerfile",
@@ -89,7 +83,6 @@ This will:
 			return fmt.Errorf("error building Docker image: %v", err)
 		}
 
-		// Create container configuration
 		containerConfig := &container.Config{
 			Image: fmt.Sprintf("elitecode/%s:%s", meta.ID, meta.Language),
 			Cmd:   utils.GetRunCommand(meta.Language),
@@ -105,7 +98,6 @@ This will:
 
 		containerName := fmt.Sprintf("elitecode_%s_%s_%d", meta.ID, meta.Language, time.Now().Unix())
 
-		// Run container
 		fmt.Println("Running your solution...")
 		output, executionTime, memoryUsage, err := dockerClient.RunContainer(
 			cmd.Context(),
@@ -117,7 +109,6 @@ This will:
 			return fmt.Errorf("error running container: %v", err)
 		}
 
-		// Print output and metrics
 		fmt.Println("\nOutput:")
 		fmt.Println("----------------------------------------")
 		fmt.Printf("%s", output)

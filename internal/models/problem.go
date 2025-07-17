@@ -2,7 +2,6 @@ package models
 
 import "time"
 
-// Difficulty represents the difficulty level of a problem
 type Difficulty string
 
 const (
@@ -12,20 +11,25 @@ const (
 	VeryHard Difficulty = "very_hard"
 )
 
-// Problem represents a coding problem
-type Problem struct {
-	ID          string     `json:"id" firestore:"id"`
-	Title       string     `json:"title" firestore:"title"`
-	Description string     `json:"description" firestore:"description"`
-	Difficulty  Difficulty `json:"difficulty" firestore:"difficulty"`
-	Tags        []string   `json:"tags" firestore:"tags"`
-	TimeLimit   int        `json:"time_limit" firestore:"time_limit"`     // in milliseconds
-	MemoryLimit int        `json:"memory_limit" firestore:"memory_limit"` // in megabytes
-	CreatedAt   time.Time  `json:"created_at" firestore:"created_at"`
-	UpdatedAt   time.Time  `json:"updated_at" firestore:"updated_at"`
+type StoragePaths struct {
+	StarterCode string `json:"starter_code" firestore:"starter_code"`
+	TestCases   string `json:"test_cases" firestore:"test_cases"`
 }
 
-// ProblemStats represents statistics for a problem
+type Problem struct {
+	ID             string       `json:"id" firestore:"id"`
+	Title          string       `json:"title" firestore:"title"`
+	Description    string       `json:"description" firestore:"description"`
+	Difficulty     Difficulty   `json:"difficulty" firestore:"difficulty"`
+	Tags           []string     `json:"tags" firestore:"tags"`
+	TimeLimit      int          `json:"time_limit" firestore:"time_limit"`     // in milliseconds
+	MemoryLimit    int          `json:"memory_limit" firestore:"memory_limit"` // in megabytes
+	SupportedLangs []string     `json:"supported_langs" firestore:"supported_langs"`
+	StoragePaths   StoragePaths `json:"storage_paths" firestore:"storage_paths"`
+	CreatedAt      time.Time    `json:"created_at" firestore:"created_at"`
+	UpdatedAt      time.Time    `json:"updated_at" firestore:"updated_at"`
+}
+
 type ProblemStats struct {
 	TotalSubmissions int       `json:"total_submissions" firestore:"total_submissions"`
 	AcceptedCount    int       `json:"accepted_count" firestore:"accepted_count"`
@@ -35,7 +39,6 @@ type ProblemStats struct {
 	UpdatedAt        time.Time `json:"updated_at" firestore:"updated_at"`
 }
 
-// UserProblemStatus represents a user's status for a problem
 type UserProblemStatus struct {
 	UserID            string             `json:"user_id" firestore:"user_id"`
 	ProblemID         string             `json:"problem_id" firestore:"problem_id"`

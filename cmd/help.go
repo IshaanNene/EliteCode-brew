@@ -16,12 +16,10 @@ Without arguments, shows general usage information.`,
 	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if len(args) == 0 {
-			// Show general help
 			fmt.Printf("\n%s\n", color.CyanString("Elitecode CLI - Your Coding Practice Companion"))
 			fmt.Println(strings.Repeat("-", 50))
 			fmt.Println("\nAvailable Commands:")
 
-			// Group commands by category
 			categories := map[string][]string{
 				"Authentication": {
 					"login      - Log in to your account",
@@ -57,7 +55,6 @@ Without arguments, shows general usage information.`,
 			return nil
 		}
 
-		// Show command-specific help
 		commandName := args[0]
 		var examples string
 		var usage string
@@ -195,7 +192,6 @@ Examples:
 			return fmt.Errorf("unknown command: %s", commandName)
 		}
 
-		// Print help
 		fmt.Printf("\n%s\n", color.CyanString("Command: "+commandName))
 		fmt.Println(strings.Repeat("-", 50))
 		fmt.Printf("\nUsage:\n  %s\n", usage)

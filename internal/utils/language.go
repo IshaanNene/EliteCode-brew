@@ -1,6 +1,5 @@
 package utils
 
-// GetFileExtension returns the file extension for a given programming language
 func GetFileExtension(language string) string {
 	extensions := map[string]string{
 		"go":     "go",
@@ -19,7 +18,6 @@ func GetFileExtension(language string) string {
 	return language
 }
 
-// GetLanguageFromExtension returns the programming language for a given file extension
 func GetLanguageFromExtension(extension string) string {
 	languages := map[string]string{
 		"go":   "go",
@@ -38,7 +36,6 @@ func GetLanguageFromExtension(extension string) string {
 	return extension
 }
 
-// GetCompilerCommand returns the compiler/interpreter command for a given language
 func GetCompilerCommand(language string) []string {
 	commands := map[string][]string{
 		"go":     {"go", "build"},
@@ -57,7 +54,6 @@ func GetCompilerCommand(language string) []string {
 	return []string{language}
 }
 
-// GetRunCommand returns the command to run a compiled/interpreted program
 func GetRunCommand(language string) []string {
 	commands := map[string][]string{
 		"go":     {"./main"},

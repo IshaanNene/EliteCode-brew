@@ -2,7 +2,6 @@ package models
 
 import "time"
 
-// SubmissionStatus represents the status of a submission
 type SubmissionStatus string
 
 const (
@@ -17,7 +16,6 @@ const (
 	StatusRuntimeError        SubmissionStatus = "runtime_error"
 )
 
-// TestCaseResult represents the result of a single test case
 type TestCaseResult struct {
 	TestCaseID     string           `json:"test_case_id" firestore:"test_case_id"`
 	Status         SubmissionStatus `json:"status" firestore:"status"`
@@ -28,7 +26,6 @@ type TestCaseResult struct {
 	ErrorMessage   string           `json:"error_message,omitempty" firestore:"error_message,omitempty"`
 }
 
-// Submission represents a solution submission
 type Submission struct {
 	ID            string           `json:"id" firestore:"id"`
 	UserID        string           `json:"user_id" firestore:"user_id"`
@@ -44,7 +41,6 @@ type Submission struct {
 	ErrorMessage  string           `json:"error_message,omitempty" firestore:"error_message,omitempty"`
 }
 
-// TestCase represents a test case for a problem
 type TestCase struct {
 	ID       string `json:"id" firestore:"id"`
 	Input    string `json:"input" firestore:"input"`
@@ -53,7 +49,6 @@ type TestCase struct {
 	Weight   int    `json:"weight" firestore:"weight"` // For weighted scoring
 }
 
-// SubmissionSummary represents a summary of a user's submissions for a problem
 type SubmissionSummary struct {
 	ProblemID        string    `json:"problem_id" firestore:"problem_id"`
 	Language         string    `json:"language" firestore:"language"`

@@ -1,7 +1,6 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Helper functions
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -10,13 +9,11 @@ service firebase.storage {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Problem assets (test cases, starter code, etc.)
     match /problems/{problemId}/{fileName} {
       allow read: if isAuthenticated();
       allow write: if false; // Only admins can modify problem assets
     }
 
-    // User solutions
     match /solutions/{userId}/{problemId}/{fileName} {
       allow read: if isAuthenticated();
       allow write: if isOwner(userId);

@@ -1,0 +1,25 @@
+# Global owners
+* @yourusername
+
+# Go code
+*.go @yourusername
+
+# Configuration files
+*.yml @yourusername
+*.yaml @yourusername
+*.json @yourusername
+
+# Documentation
+*.md @yourusername
+docs/ @yourusername
+
+# Build and deployment
+Dockerfile @yourusername
+docker-compose.yml @yourusername
+Makefile @yourusername
+.github/workflows/ @yourusername
+
+# Firebase configuration
+firebase.json @yourusername
+firestore.* @yourusername
+storage.rules @yourusername 

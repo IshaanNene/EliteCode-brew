@@ -6,12 +6,12 @@ GOTEST=$(GOCMD) test
 GOGET=$(GOCMD) get
 GOMOD=$(GOCMD) mod
 BINARY_NAME=elitecode
-VERSION=0.1.0
+VERSION=$(shell git describe --tags --always --dirty)
 COMMIT=$(shell git rev-parse --short HEAD)
 BUILD_TIME=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
 
 # Build flags
-LDFLAGS=-ldflags "-X github.com/yourusername/elitecode/cmd.Version=$(VERSION) -X github.com/yourusername/elitecode/cmd.GitCommit=$(COMMIT) -X github.com/yourusername/elitecode/cmd.BuildDate=$(BUILD_TIME)"
+LDFLAGS=-ldflags "-X github.com/IshaanNene/EliteCode-brew/cmd.Version=$(VERSION) -X github.com/IshaanNene/EliteCode-brew/cmd.GitCommit=$(COMMIT) -X github.com/IshaanNene/EliteCode-brew/cmd.BuildDate=$(BUILD_TIME)"
 
 .PHONY: all build clean test coverage deps tidy install uninstall
 

@@ -7,30 +7,25 @@ import (
 	"time"
 
 	"cloud.google.com/go/firestore"
-	"github.com/yourusername/elitecode/internal/models"
+	"github.com/IshaanNene/EliteCode-brew/internal/models"
 	"google.golang.org/api/iterator"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-// Service handles problem-related operations
 type Service struct {
 	firestoreClient *firestore.Client
 }
 
-// NewService creates a new problem service
 func NewService(firestoreClient *firestore.Client) *Service {
 	return &Service{
 		firestoreClient: firestoreClient,
 	}
 }
 
-// ListProblems retrieves a list of problems with optional filters
 func (s *Service) ListProblems(ctx context.Context, filters map[string]interface{}) ([]models.Problem, error) {
-	// Start with the collection reference
 	collRef := s.firestoreClient.Collection("problems")
 
-	// Build query
 	var query firestore.Query
 	first := true
 	for key, value := range filters {
@@ -42,7 +37,6 @@ func (s *Service) ListProblems(ctx context.Context, filters map[string]interface
 		}
 	}
 
-	// If no filters were applied, use the collection reference
 	var docs []*firestore.DocumentSnapshot
 	var err error
 	if first {
@@ -55,7 +49,6 @@ func (s *Service) ListProblems(ctx context.Context, filters map[string]interface
 		return nil, fmt.Errorf("error fetching problems: %v", err)
 	}
 
-	// Convert documents to problems
 	problems := make([]models.Problem, 0, len(docs))
 	for _, doc := range docs {
 		var problem models.Problem
@@ -66,10 +59,8 @@ func (s *Service) ListProblems(ctx context.Context, filters map[string]interface
 		problems = append(problems, problem)
 	}
 
-	// Sort problems by difficulty and ID
 	sort.Slice(problems, func(i, j int) bool {
 		if problems[i].Difficulty != problems[j].Difficulty {
-			// Order: easy -> medium -> hard -> very_hard
 			difficultyOrder := map[models.Difficulty]int{
 				models.Easy:     1,
 				models.Medium:   2,
@@ -84,7 +75,6 @@ func (s *Service) ListProblems(ctx context.Context, filters map[string]interface
 	return problems, nil
 }
 
-// GetProblem retrieves a single problem by ID
 func (s *Service) GetProblem(ctx context.Context, id string) (*models.Problem, error) {
 	doc, err := s.firestoreClient.Collection("problems").Doc(id).Get(ctx)
 	if err != nil {
@@ -100,7 +90,6 @@ func (s *Service) GetProblem(ctx context.Context, id string) (*models.Problem, e
 	return &problem, nil
 }
 
-// GetUserProblemStatus retrieves a user's status for a specific problem
 func (s *Service) GetUserProblemStatus(ctx context.Context, userID, problemID string) (*models.UserProblemStatus, error) {
 	doc, err := s.firestoreClient.Collection("users").Doc(userID).Collection("problem_status").Doc(problemID).Get(ctx)
 	if err != nil {
@@ -118,7 +107,6 @@ func (s *Service) GetUserProblemStatus(ctx context.Context, userID, problemID st
 	return &status, nil
 }
 
-// GetUserProblemStatuses gets all problem statuses for a user
 func (s *Service) GetUserProblemStatuses(ctx context.Context, userID string) ([]models.UserProblemStatus, error) {
 	iter := s.firestoreClient.Collection("users").Doc(userID).Collection("problem_status").Documents(ctx)
 	defer iter.Stop()
@@ -144,7 +132,6 @@ func (s *Service) GetUserProblemStatuses(ctx context.Context, userID string) ([]
 	return statuses, nil
 }
 
-// SaveUserProblemStatus saves a user's status for a problem
 func (s *Service) SaveUserProblemStatus(ctx context.Context, status *models.UserProblemStatus) error {
 	_, err := s.firestoreClient.Collection("users").Doc(status.UserID).Collection("problem_status").Doc(status.ProblemID).Set(ctx, status)
 	if err != nil {
@@ -153,7 +140,6 @@ func (s *Service) SaveUserProblemStatus(ctx context.Context, status *models.User
 	return nil
 }
 
-// GetProblemStats retrieves statistics for a specific problem
 func (s *Service) GetProblemStats(ctx context.Context, problemID string) (*models.ProblemStats, error) {
 	doc, err := s.firestoreClient.Collection("problem_stats").Doc(problemID).Get(ctx)
 	if err != nil {
@@ -171,7 +157,6 @@ func (s *Service) GetProblemStats(ctx context.Context, problemID string) (*model
 	return &stats, nil
 }
 
-// GetRecentSubmissions gets recent submissions for a problem
 func (s *Service) GetRecentSubmissions(ctx context.Context, problemID string, limit int) ([]models.Submission, error) {
 	iter := s.firestoreClient.Collection("submissions").
 		Where("problem_id", "==", problemID).
@@ -201,9 +186,7 @@ func (s *Service) GetRecentSubmissions(ctx context.Context, problemID string, li
 	return submissions, nil
 }
 
-// GetTopSolutions gets the top solutions for a problem
 func (s *Service) GetTopSolutions(ctx context.Context, problemID string) ([]models.Submission, error) {
-	// Get accepted submissions ordered by execution time
 	iter := s.firestoreClient.Collection("submissions").
 		Where("problem_id", "==", problemID).
 		Where("status", "==", models.StatusAccepted).
@@ -234,9 +217,7 @@ func (s *Service) GetTopSolutions(ctx context.Context, problemID string) ([]mode
 	return submissions, nil
 }
 
-// GetProblemRankings gets rankings for a specific problem
 func (s *Service) GetProblemRankings(ctx context.Context, problemID string, startTime time.Time) ([]models.UserRanking, error) {
-	// Get all accepted submissions for the problem
 	query := s.firestoreClient.Collection("submissions").
 		Where("problem_id", "==", problemID).
 		Where("status", "==", models.StatusAccepted)
@@ -248,7 +229,6 @@ func (s *Service) GetProblemRankings(ctx context.Context, problemID string, star
 	iter := query.Documents(ctx)
 	defer iter.Stop()
 
-	// Map to store user's best submission
 	userBest := make(map[string]models.Submission)
 	usernames := make(map[string]string)
 
@@ -266,7 +246,6 @@ func (s *Service) GetProblemRankings(ctx context.Context, problemID string, star
 			return nil, fmt.Errorf("error parsing submission: %v", err)
 		}
 
-		// Get username if not already fetched
 		if _, ok := usernames[submission.UserID]; !ok {
 			userDoc, err := s.firestoreClient.Collection("users").Doc(submission.UserID).Get(ctx)
 			if err != nil {
@@ -281,17 +260,13 @@ func (s *Service) GetProblemRankings(ctx context.Context, problemID string, star
 			usernames[submission.UserID] = user.Username
 		}
 
-		// Update best submission if this one is better
 		if best, ok := userBest[submission.UserID]; !ok || submission.ExecutionTime < best.ExecutionTime {
 			userBest[submission.UserID] = submission
 		}
 	}
 
-	// Convert to rankings
 	var rankings []models.UserRanking
 	for userID, submission := range userBest {
-		// Calculate score based on execution time and memory usage
-		// Lower is better, so we use inverse
 		timeScore := 1000000.0 / float64(submission.ExecutionTime)
 		memoryScore := 1000000.0 / float64(submission.MemoryUsed)
 		score := timeScore*0.7 + memoryScore*0.3 // Weight time more heavily than memory
@@ -307,12 +282,10 @@ func (s *Service) GetProblemRankings(ctx context.Context, problemID string, star
 		rankings = append(rankings, ranking)
 	}
 
-	// Sort rankings by score (descending)
 	sort.Slice(rankings, func(i, j int) bool {
 		return rankings[i].Score > rankings[j].Score
 	})
 
-	// Add ranks
 	for i := range rankings {
 		rankings[i].Rank = i + 1
 	}
@@ -320,9 +293,7 @@ func (s *Service) GetProblemRankings(ctx context.Context, problemID string, star
 	return rankings, nil
 }
 
-// GetGlobalRankings gets global user rankings
 func (s *Service) GetGlobalRankings(ctx context.Context, startTime time.Time) ([]models.UserRanking, error) {
-	// Get all users with their submission summaries
 	iter := s.firestoreClient.Collection("users").Documents(ctx)
 	defer iter.Stop()
 
@@ -343,7 +314,6 @@ func (s *Service) GetGlobalRankings(ctx context.Context, startTime time.Time) ([
 			return nil, fmt.Errorf("error parsing user: %v", err)
 		}
 
-		// Get user's submission summaries
 		summariesIter := s.firestoreClient.Collection("users").Doc(doc.Ref.ID).Collection("submission_summaries").Documents(ctx)
 
 		var totalTime int64
@@ -371,7 +341,6 @@ func (s *Service) GetGlobalRankings(ctx context.Context, startTime time.Time) ([
 		}
 
 		if problemsSolved > 0 {
-			// Calculate score based on problems solved, average time, and average memory
 			avgTime := float64(totalTime) / float64(problemsSolved)
 			avgMemory := float64(totalMemory) / float64(problemsSolved)
 			timeScore := 1000000.0 / avgTime
@@ -390,12 +359,10 @@ func (s *Service) GetGlobalRankings(ctx context.Context, startTime time.Time) ([
 		}
 	}
 
-	// Sort rankings by score (descending)
 	sort.Slice(rankings, func(i, j int) bool {
 		return rankings[i].Score > rankings[j].Score
 	})
 
-	// Add ranks
 	for i := range rankings {
 		rankings[i].Rank = i + 1
 	}

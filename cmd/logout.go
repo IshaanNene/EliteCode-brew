@@ -18,7 +18,6 @@ This will:
 2. Clear your GitHub token (if any)
 3. Remove any cached data`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// Get config directory
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
 			return fmt.Errorf("error getting user home directory: %v", err)
@@ -27,7 +26,6 @@ This will:
 		configDir := filepath.Join(homeDir, ".elitecode")
 		configFile := filepath.Join(configDir, "config.json")
 
-		// Read existing config
 		configBytes, err := os.ReadFile(configFile)
 		if err != nil {
 			if os.IsNotExist(err) {
@@ -42,16 +40,13 @@ This will:
 			return fmt.Errorf("error parsing config file: %v", err)
 		}
 
-		// Check if logged in
 		if _, ok := config["uid"]; !ok {
 			fmt.Println("Already logged out.")
 			return nil
 		}
 
-		// Clear config
 		config = make(map[string]interface{})
 
-		// Save empty config
 		configJSON, err := json.MarshalIndent(config, "", "  ")
 		if err != nil {
 			return fmt.Errorf("error marshaling config: %v", err)
@@ -61,7 +56,6 @@ This will:
 			return fmt.Errorf("error writing config file: %v", err)
 		}
 
-		// Remove cache directory
 		cacheDir := filepath.Join(configDir, "cache")
 		if err := os.RemoveAll(cacheDir); err != nil && !os.IsNotExist(err) {
 			return fmt.Errorf("error removing cache directory: %v", err)
