@@ -17,18 +17,18 @@ type Config struct {
 	ProjectID         string `json:"projectId"`
 	StorageBucket     string `json:"storageBucket"`
 	MessagingSenderID string `json:"messagingSenderId"`
-	AppID            string `json:"appId"`
-	MeasurementID    string `json:"measurementId"`
+	AppID             string `json:"appId"`
+	MeasurementID     string `json:"measurementId"`
 }
 
 var defaultConfig = Config{
-	APIKey:            "AIzaSyDhoR2EA3uuWqWSkiiE5G1vRkeqoGHBdro",
-	AuthDomain:        "elitecode-47058.firebaseapp.com",
-	ProjectID:         "elitecode-47058",
-	StorageBucket:     "elitecode-47058.firebasestorage.app",
-	MessagingSenderID: "605884776680",
-	AppID:            "1:605884776680:web:f89db0d49b021139dec95d",
-	MeasurementID:    "G-4XKNK2CH3E",
+	APIKey:            "AIzaSyCblKxoY7dXZspe-szzLN7lwYb3eFWGvXI",
+	AuthDomain:        "brew-elitecode-store.firebaseapp.com",
+	ProjectID:         "brew-elitecode-store",
+	StorageBucket:     "brew-elitecode-store.firebasestorage.app",
+	MessagingSenderID: "833944171879",
+	AppID:             "1:833944171879:web:ac583b56b0c99c9b892bc2",
+	MeasurementID:     "G-4XKNK2CH3E",
 }
 
 func InitializeApp(ctx context.Context) (*firebase.App, error) {
@@ -77,4 +77,4 @@ func InitializeApp(ctx context.Context) (*firebase.App, error) {
 
 func GetConfig() Config {
 	return defaultConfig
-} 
+}
