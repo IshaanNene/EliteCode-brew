@@ -1,65 +1,26 @@
 {
-  "indexes": [
-    {
-      "collectionGroup": "problems",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "difficulty",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "title",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "submissions",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "problem_id",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "submitted_at",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "submissions",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "problem_id",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "execution_time",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "submission_summaries",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "solved",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "first_solved_at",
-          "order": "DESCENDING"
-        }
-      ]
-    }
-  ],
+  // Example:
+  //
+  // "indexes": [
+  //   {
+  //     "collectionGroup": "widgets",
+  //     "queryScope": "COLLECTION",
+  //     "fields": [
+  //       { "fieldPath": "foo", "arrayConfig": "CONTAINS" },
+  //       { "fieldPath": "bar", "mode": "DESCENDING" }
+  //     ]
+  //   },
+  //
+  //  "fieldOverrides": [
+  //    {
+  //      "collectionGroup": "widgets",
+  //      "fieldPath": "baz",
+  //      "indexes": [
+  //        { "order": "ASCENDING", "queryScope": "COLLECTION" }
+  //      ]
+  //    },
+  //   ]
+  // ]
+  "indexes": [],
   "fieldOverrides": []
-} 
+}
