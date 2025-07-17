@@ -1,4 +1,3 @@
-# Go parameters
 GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
@@ -10,7 +9,6 @@ VERSION=$(shell git describe --tags --always --dirty)
 COMMIT=$(shell git rev-parse --short HEAD)
 BUILD_TIME=$(shell date -u '+%Y-%m-%d_%H:%M:%S')
 
-# Build flags
 LDFLAGS=-ldflags "-X github.com/IshaanNene/EliteCode-brew/cmd.Version=$(VERSION) -X github.com/IshaanNene/EliteCode-brew/cmd.GitCommit=$(COMMIT) -X github.com/IshaanNene/EliteCode-brew/cmd.BuildDate=$(BUILD_TIME)"
 
 .PHONY: all build clean test coverage deps tidy install uninstall
@@ -59,7 +57,6 @@ lint:
 fmt:
 	$(GOCMD) fmt ./...
 
-# Release targets
 .PHONY: release release-linux release-darwin release-windows
 
 release: release-linux release-darwin release-windows
@@ -78,7 +75,6 @@ release-windows:
 	GOOS=windows GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o dist/$(BINARY_NAME)-windows-amd64.exe
 	cd dist && zip $(BINARY_NAME)-windows-amd64.zip $(BINARY_NAME)-windows-amd64.exe
 
-# Docker targets
 .PHONY: docker-build docker-run docker-clean
 
 docker-build:
