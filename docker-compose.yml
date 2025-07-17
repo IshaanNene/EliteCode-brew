@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+      - ${HOME}/.elitecode:/root/.elitecode
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - FIREBASE_EMULATOR_HOST=firebase:8080
+    depends_on:
+      - firebase
+
+  firebase:
+    image: andreysenov/firebase-tools
+    ports:
+      - "4000:4000"   # Emulator UI
+      - "9099:9099"   # Auth
+      - "8080:8080"   # Firestore
+      - "9199:9199"   # Storage
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: firebase emulators:start --project demo-project
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    command: make test
+    environment:
+      - FIREBASE_EMULATOR_HOST=firebase:8080
+    depends_on:
+      - firebase 

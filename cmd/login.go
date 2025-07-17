@@ -1,25 +1,82 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/IshaanNene/EliteCode-brew/internal/auth"
+	"os"
+	"path/filepath"
+
 	"github.com/spf13/cobra"
+	"github.com/yourusername/elitecode/internal/auth"
 )
 
-var LoginCmd = &cobra.Command{
+var loginCmd = &cobra.Command{
 	Use:   "login",
-	Short: "Login into your EliteCode account",
-	Run: func(cmd *cobra.Command, args []string) {
-		var username, password string
-		fmt.Print("Username: ")
-		fmt.Scanln(&username)
-		fmt.Print("Password: ")
-		fmt.Scanln(&password)
-		err := auth.LoginUser(username, password)
+	Short: "Log in to your Elitecode account",
+	Long:  `Log in to your Elitecode account using your email and password.`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// Get user input
+		email, err := promptForInput("Email", validateEmail)
 		if err != nil {
-			fmt.Println("Login failed:", err)
-			return
+			return err
 		}
-		fmt.Println("Login successful! type elitecode help to continue")
+
+		password, err := promptForPassword("Password", nil)
+		if err != nil {
+			return err
+		}
+
+		// Sign in with email and password
+		ctx := cmd.Context()
+		user, err := auth.SignInWithEmailPassword(ctx, email, password)
+		if err != nil {
+			return fmt.Errorf("error authenticating: %v", err)
+		}
+
+		// Create custom token for the user
+		token, err := firebaseClient.Auth.CustomToken(ctx, user.UID)
+		if err != nil {
+			return fmt.Errorf("error creating token: %v", err)
+		}
+
+		// Get user's home directory
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			return fmt.Errorf("error getting user home directory: %v", err)
+		}
+
+		// Create .elitecode directory if it doesn't exist
+		configDir := filepath.Join(homeDir, ".elitecode")
+		if err := os.MkdirAll(configDir, 0755); err != nil {
+			return fmt.Errorf("error creating config directory: %v", err)
+		}
+
+		// Store token in config file
+		config := struct {
+			Token string `json:"token"`
+			Email string `json:"email"`
+			UID   string `json:"uid"`
+		}{
+			Token: token,
+			Email: email,
+			UID:   user.UID,
+		}
+
+		configJSON, err := json.MarshalIndent(config, "", "  ")
+		if err != nil {
+			return fmt.Errorf("error marshaling config: %v", err)
+		}
+
+		configFile := filepath.Join(configDir, "config.json")
+		if err := os.WriteFile(configFile, configJSON, 0600); err != nil {
+			return fmt.Errorf("error writing config file: %v", err)
+		}
+
+		fmt.Printf("Successfully logged in as %s\n", email)
+		return nil
 	},
+}
+
+func init() {
+	rootCmd.AddCommand(loginCmd)
 }

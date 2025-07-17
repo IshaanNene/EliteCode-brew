@@ -1,33 +1,29 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	"github.com/spf13/cobra"
 	"os"
+	"os/signal"
+	"syscall"
 
-	"github.com/IshaanNene/EliteCode-brew/cmd"
+	"github.com/yourusername/elitecode/cmd"
 )
 
 func main() {
-	rootCmd := &cobra.Command{
-		Use:   "elitecode",
-		Short: "EliteCode - Official CLI for Competitive Coding",
-		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Println("Welcome to EliteCode CLI! Use 'elitecode help' to see available commands.")
-		},
-	}
+	// Create a context that can be cancelled
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	rootCmd.AddCommand(
-		cmd.SignupCmd,
-		cmd.LoginCmd,
-		cmd.LogoutCmd,
-		cmd.WhoamiCmd,
-		cmd.HelpCmd,
-		// Add remaining command bindings here
-	)
+	// Handle signals
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-sigChan
+		fmt.Println("\nReceived signal, cleaning up...")
+		cancel()
+	}()
 
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	// Execute the root command with context
+	cmd.ExecuteContext(ctx)
 }
