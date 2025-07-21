@@ -6,7 +6,7 @@ toolchain go1.24.5
 
 require (
 	cloud.google.com/go/firestore v1.18.0
-	firebase.google.com/go/v4 v4.16.1
+	firebase.google.com/go/v4 v4.17.0
 	github.com/docker/docker v25.0.3+incompatible
 	github.com/fatih/color v1.18.0
 	github.com/google/go-github/v56 v56.0.0
