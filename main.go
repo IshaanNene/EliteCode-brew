@@ -1,23 +1,37 @@
 package main
 
 import (
-	"context"
-	"os"
-	"os/signal"
-	"syscall"
-	"github.com/IshaanNene/EliteCode-brew/cmd"
+    "fmt"
+    "os"
+
+    "elitecode/auth"
+    "github.com/spf13/cobra"
 )
 
 func main() {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+    var rootCmd = &cobra.Command{Use: "elitecode"}
 
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
-	go func() {
-		<-sigCh
-		cancel()
-	}()
+    var signupCmd = &cobra.Command{
+        Use:   "signup",
+        Short: "Sign up for EliteCode",
+        Run: func(cmd *cobra.Command, args []string) {
+            auth.Signup()
+        },
+    }
 
-	cmd.ExecuteContext(ctx)
+    var loginCmd = &cobra.Command{
+        Use:   "login",
+        Short: "Login to EliteCode",
+        Run: func(cmd *cobra.Command, args []string) {
+            auth.Login()
+        },
+    }
+
+    rootCmd.AddCommand(signupCmd)
+    rootCmd.AddCommand(loginCmd)
+
+    if err := rootCmd.Execute(); err != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
 }
