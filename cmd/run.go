@@ -1,13 +1,10 @@
 package cmd
 
 import (
-    "github.com/IshaanNene/EliteCode-brew/firebase"
     "github.com/IshaanNene/EliteCode-brew/problems"
     "github.com/IshaanNene/EliteCode-brew/utils"
-    "context"
     "fmt"
     "log"
-
     "github.com/manifoldco/promptui"
     "github.com/spf13/cobra"
 )
@@ -18,7 +15,7 @@ var runCmd = &cobra.Command{
     Run: func(cmd *cobra.Command, args []string) {
         selectedProblem := problems.GetSelectedProblem()
         if selectedProblem.ID == "" {
-            fmt.Println("❌ No problem selected. Use 'elitecode set_problem' first.")
+            fmt.Println("No problem selected. Use 'elitecode set_problem' first.")
             return
         }
 
@@ -27,13 +24,13 @@ var runCmd = &cobra.Command{
             Items: selectedProblem.LanguagesSupported,
         }
 
-        index, lang, err := prompt.Run()
+        _, lang, err := prompt.Run()
         if err != nil {
             fmt.Println("Cancelled.")
             return
         }
 
-        fmt.Printf("➡️  Language selected: %s\n", lang)
+        fmt.Printf("Language selected: %s\n", lang)
 
         folder := fmt.Sprintf("Solutions/%s", selectedProblem.ID)
         target := fmt.Sprintf("%s", selectedProblem.ID)
@@ -49,6 +46,6 @@ var runCmd = &cobra.Command{
             log.Fatalf("Error fetching files: %v", err)
         }
 
-        fmt.Printf("✅ Problem '%s' fetched for language '%s'.\n", selectedProblem.Title, lang)
+        fmt.Printf("Problem '%s' fetched for language '%s'.\n", selectedProblem.Title, lang)
     },
 }

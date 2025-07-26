@@ -6,7 +6,28 @@ import (
     "fmt"
     "github.com/manifoldco/promptui"
     "log"
+    "encoding/json"
+    "os"
+    "path/filepath"
 )
+
+func SaveSelectedProblem(p Problem) {
+    path := filepath.Join(os.Getenv("HOME"), ".elitecode", "selected.json")
+    os.MkdirAll(filepath.Dir(path), os.ModePerm)
+    data, _ := json.MarshalIndent(p, "", "  ")
+    os.WriteFile(path, data, 0644)
+}
+
+func GetSelectedProblem() Problem {
+    var p Problem
+    path := filepath.Join(os.Getenv("HOME"), ".elitecode", "selected.json")
+    data, err := os.ReadFile(path)
+    if err != nil {
+        return p
+    }
+    json.Unmarshal(data, &p)
+    return p
+}
 
 func SetProblem() {
     app := firebase.InitFirebase()

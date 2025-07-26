@@ -3,11 +3,10 @@ package main
 import (
     "fmt"
     "os"
-
     "github.com/IshaanNene/EliteCode-brew/auth"
     "github.com/IshaanNene/EliteCode-brew/problems"
-    "github.com/IshaanNene/EliteCode-brew/cmd"
     "github.com/spf13/cobra"
+    "github.com/IshaanNene/EliteCode-brew/cmd"
 )
 
 func main() {
@@ -50,6 +49,7 @@ func main() {
     rootCmd.AddCommand(problemsCmd)
     rootCmd.AddCommand(setProblemCmd)
     rootCmd.AddCommand(runCmd)
+    rootCmd.AddCommand(submitCmd)
     if err := rootCmd.Execute(); err != nil {
         fmt.Println(err)
         os.Exit(1)
