@@ -6,6 +6,7 @@ import (
 
     "github.com/IshaanNene/EliteCode-brew/auth"
     "github.com/IshaanNene/EliteCode-brew/problems"
+    "github.com/IshaanNene/EliteCode-brew/cmd"
     "github.com/spf13/cobra"
 )
 
@@ -48,6 +49,7 @@ func main() {
     rootCmd.AddCommand(loginCmd)
     rootCmd.AddCommand(problemsCmd)
     rootCmd.AddCommand(setProblemCmd)
+    rootCmd.AddCommand(runCmd)
     if err := rootCmd.Execute(); err != nil {
         fmt.Println(err)
         os.Exit(1)

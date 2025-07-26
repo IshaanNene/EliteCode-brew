@@ -7,9 +7,9 @@ toolchain go1.24.5
 require (
 	cloud.google.com/go/firestore v1.18.0
 	firebase.google.com/go/v4 v4.17.0
+	github.com/manifoldco/promptui v0.9.0
 	github.com/spf13/cobra v1.9.1
 	google.golang.org/api v0.243.0
-	github.com/manifoldco/promptui v0.9.0
 )
 
 require (
@@ -42,7 +42,6 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/manifoldco/promptui v0.9.0 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/spiffe/go-spiffe/v2 v2.5.0 // indirect
