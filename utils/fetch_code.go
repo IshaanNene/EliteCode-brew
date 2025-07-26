@@ -1,54 +1,54 @@
 package utils
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
-	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
-	"github.com/IshaanNene/EliteCode-brew/problems"
+    "encoding/json"
+    "fmt"
+    "io"
+    "net/http"
+    "os"
 )
 
-const (
-	GHOwner = "IshaanNene"
-	GHRepo  = "AlgoRank"
-	GHBranch = "main"
-)
+func FetchFilesFromGitHub(owner, repo, branch, folderPath, targetDir string) error {
+    os.MkdirAll(targetDir, os.ModePerm)
 
-func FetchStarterCode(p problems.SelectedProblem) (string, error) {
-	dir := filepath.Join(".", p.ID+"_"+strings.ToLower(p.Language))
-	os.MkdirAll(dir, 0755)
+    apiURL := fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/%s?ref=%s", owner, repo, folderPath, branch)
+    resp, err := http.Get(apiURL)
+    if err != nil {
+        return err
+    }
+    defer resp.Body.Close()
 
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/contents/Solutions/%s?ref=%s", GHOwner, GHRepo, p.ID, GHBranch)
-	resp, err := http.Get(url)
-	if err != nil {
-		return "", fmt.Errorf("failed to fetch GitHub files list: %v", err)
-	}
-	defer resp.Body.Close()
+    var files []struct {
+        Name string `json:"name"`
+    }
 
-	var files []struct {
-		Name string `json:"name"`
-		Path string `json:"path"`
-	}
-	json.NewDecoder(resp.Body).Decode(&files)
+    if err := json.NewDecoder(resp.Body).Decode(&files); err != nil {
+        return err
+    }
 
-	for _, f := range files {
-		if strings.Contains(f.Name, p.Language) || strings.Contains(f.Name, "testcases") {
-			rawURL := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%s/%s", GHOwner, GHRepo, GHBranch, f.Path)
-			destPath := filepath.Join(dir, f.Name)
+    for _, file := range files {
+        rawURL := fmt.Sprintf("https://raw.githubusercontent.com/%s/%s/%s/%s/%s", owner, repo, branch, folderPath, file.Name)
+        outPath := fmt.Sprintf("%s/%s", targetDir, file.Name)
+        fmt.Printf("Downloading %s ...\n", file.Name)
 
-			fileResp, err := http.Get(rawURL)
-			if err != nil {
-				return "", fmt.Errorf("failed to fetch %s: %v", f.Name, err)
-			}
-			defer fileResp.Body.Close()
+        out, err := os.Create(outPath)
+        if err != nil {
+            return err
+        }
 
-			out, _ := os.Create(destPath)
-			io.Copy(out, fileResp.Body)
-			out.Close()
-		}
-	}
-	return dir, nil
+        res, err := http.Get(rawURL)
+        if err != nil {
+            return err
+        }
+        defer res.Body.Close()
+
+        _, err = io.Copy(out, res.Body)
+        out.Close()
+        if err != nil {
+            return err
+        }
+    }
+
+    fmt.Println("Download complete.")
+    return nil
 }

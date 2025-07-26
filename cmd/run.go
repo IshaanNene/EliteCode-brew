@@ -1,34 +1,54 @@
 package cmd
 
 import (
-	"fmt"
-	"github.com/IshaanNene/EliteCode-brew/utils"
-  "github.com/IshaanNene/EliteCode-brew/problems"
-	"os"
-	"path/filepath"
+    "github.com/IshaanNene/EliteCode-brew/firebase"
+    "github.com/IshaanNene/EliteCode-brew/problems"
+    "github.com/IshaanNene/EliteCode-brew/utils"
+    "context"
+    "fmt"
+    "log"
+
+    "github.com/manifoldco/promptui"
+    "github.com/spf13/cobra"
 )
 
-func RunSolution() {
-	problemPath := filepath.Join(".", utils.GetProblemDirectory())
-	if _, err := os.Stat(problemPath); os.IsNotExist(err) {
-		fmt.Println("❌ Problem directory not found. Please run `elitecode set_problem` first.")
-		return
-	}
+var runCmd = &cobra.Command{
+    Use:   "run",
+    Short: "Select a language and fetch problem code from GitHub",
+    Run: func(cmd *cobra.Command, args []string) {
+        selectedProblem := problems.GetSelectedProblem()
+        if selectedProblem.ID == "" {
+            fmt.Println("❌ No problem selected. Use 'elitecode set_problem' first.")
+            return
+        }
 
-	lang := utils.GetSelectedLanguage()
-	if lang == "" {
-		fmt.Println("❌ Selected language not found. Try setting the problem again.")
-		return
-	}
+        prompt := promptui.Select{
+            Label: "Select language",
+            Items: selectedProblem.LanguagesSupported,
+        }
 
-	err := utils.PullStarterCode()
-	if err != nil {
-		fmt.Printf("❌ Failed to pull starter code: %v\n", err)
-		return
-	}
+        index, lang, err := prompt.Run()
+        if err != nil {
+            fmt.Println("Cancelled.")
+            return
+        }
 
-	dockerErr := utils.RunInDocker(lang, problemPath, "testcases.json", false)
-	if dockerErr != nil {
-		fmt.Printf("❌ Docker execution failed: %v\n", dockerErr)
-	}
+        fmt.Printf("➡️  Language selected: %s\n", lang)
+
+        folder := fmt.Sprintf("Solutions/%s", selectedProblem.ID)
+        target := fmt.Sprintf("%s", selectedProblem.ID)
+
+        err = utils.FetchFilesFromGitHub(
+            "IshaanNene",
+            "AlgoRank",
+            "main",
+            folder,
+            target,
+        )
+        if err != nil {
+            log.Fatalf("Error fetching files: %v", err)
+        }
+
+        fmt.Printf("✅ Problem '%s' fetched for language '%s'.\n", selectedProblem.Title, lang)
+    },
 }

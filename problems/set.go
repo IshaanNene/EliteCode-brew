@@ -1,71 +1,64 @@
 package problems
 
 import (
-	"context"
-	"encoding/json"
-	"fmt"
-	"log"
-	"os"
-	"path/filepath"
-
-	"github.com/IshaanNene/EliteCode-brew/firebase"
-	"github.com/IshaanNene/EliteCode-brew/utils"
-	"github.com/manifoldco/promptui"
+    "context"
+    "github.com/IshaanNene/EliteCode-brew/firebase"
+    "fmt"
+    "github.com/manifoldco/promptui"
+    "log"
 )
 
 func SetProblem() {
-	app := firebase.InitFirebase()
-	ctx := context.Background()
-	client, err := app.Firestore(ctx)
-	if err != nil {
-		log.Fatalf("Firestore init error: %v", err)
-	}
-	defer client.Close()
+    app := firebase.InitFirebase()
+    ctx := context.Background()
 
-	iter := client.Collection("problems").Documents(ctx)
-	var list []Problem
-	var items []string
-	for {
-		doc, err := iter.Next()
-		if err != nil {
-			break
-		}
-		var p Problem
-		doc.DataTo(&p)
-		list = append(list, p)
-		items = append(items, fmt.Sprintf("%s (%s)", p.Title, p.Difficulty))
-	}
+    client, err := app.Firestore(ctx)
+    if err != nil {
+        log.Fatalf("Failed to initialize Firestore client: %v", err)
+    }
+    defer client.Close()
 
-	prompt := promptui.Select{
-		Label: "Select Problem",
-		Items: items,
-	}
-	idx, _, err := prompt.Run()
-	if err != nil {
-		fmt.Println("Cancelled")
-		return
-	}
-	sel := list[idx]
+    iter := client.Collection("problems").Documents(ctx)
 
-	prompt2 := promptui.Select{
-		Label: "Select Language",
-		Items: sel.LanguagesSupported,
-	}
-	_, lang, err := prompt2.Run()
-	if err != nil {
-		fmt.Println("Cancelled")
-		return
-	}
+    var problems []Problem
+    var displayList []string
 
-	// Save to local state
-	sel.Lang = lang
-	savePath := filepath.Join(os.Getenv("HOME"), ".elitecode", "selected.json")
-	os.MkdirAll(filepath.Dir(savePath), os.ModePerm)
-	data, _ := json.MarshalIndent(sel, "", "  ")
-	os.WriteFile(savePath, data, 0644)
+    for {
+        doc, err := iter.Next()
+        if err != nil {
+            break
+        }
 
-	fmt.Printf("✅ Saved: %s (%s) in %s\n", sel.Title, sel.ID, lang)
+        var p Problem
+        err = doc.DataTo(&p)
+        if err != nil {
+            fmt.Println("Skipping a problem due to error:", err)
+            continue
+        }
 
-	// Fetch code from GitHub
-	utils.FetchStarterCode(sel.ID)
+        problems = append(problems, p)
+        displayList = append(displayList, fmt.Sprintf("%s (%s)", p.Title, p.Difficulty))
+    }
+
+    if len(problems) == 0 {
+        fmt.Println("No problems found.")
+        return
+    }
+
+    // Use PromptUI to select problem
+    prompt := promptui.Select{
+        Label: "Select a problem",
+        Items: displayList,
+        Size:  10,
+    }
+
+    index, _, err := prompt.Run()
+    if err != nil {
+        fmt.Printf("Prompt failed: %v\n", err)
+        return
+    }
+
+    selected := problems[index]
+    fmt.Println("\nYou selected:\n")
+    PrintProblemCard(selected.Title, selected.ID, selected.Difficulty, selected.Tags, selected.LanguagesSupported)
 }
