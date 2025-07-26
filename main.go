@@ -29,16 +29,25 @@ func main() {
     }
 
     var problemsCmd = &cobra.Command{
-    Use:   "problems",
-    Short: "List available problems",
-    Run: func(cmd *cobra.Command, args []string) {
-        problems.ListProblems()
-    },
-}
+        Use:   "problems",
+        Short: "List available problems",
+        Run: func(cmd *cobra.Command, args []string) {
+            problems.ListProblems()
+        },
+    }
+    var setProblemCmd = &cobra.Command{
+        Use:   "set_problem",
+        Short: "Select and set a problem from the list",
+        Run: func(cmd *cobra.Command, args []string) {
+            problems.SetProblem()
+        },
+    }
+
 
     rootCmd.AddCommand(signupCmd)
     rootCmd.AddCommand(loginCmd)
     rootCmd.AddCommand(problemsCmd)
+    rootCmd.AddCommand(setProblemCmd)
     if err := rootCmd.Execute(); err != nil {
         fmt.Println(err)
         os.Exit(1)
