@@ -5,6 +5,7 @@ import (
     "os"
 
     "github.com/IshaanNene/EliteCode-brew/auth"
+    "github.com/IshaanNene/EliteCode-brew/problems"
     "github.com/spf13/cobra"
 )
 
@@ -27,9 +28,17 @@ func main() {
         },
     }
 
+    var problemsCmd = &cobra.Command{
+    Use:   "problems",
+    Short: "List available problems",
+    Run: func(cmd *cobra.Command, args []string) {
+        problems.ListProblems()
+    },
+}
+
     rootCmd.AddCommand(signupCmd)
     rootCmd.AddCommand(loginCmd)
-
+    rootCmd.AddCommand(problemsCmd)
     if err := rootCmd.Execute(); err != nil {
         fmt.Println(err)
         os.Exit(1)
