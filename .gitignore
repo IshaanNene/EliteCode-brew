@@ -39,3 +39,6 @@ ui-debug.log
 bin/
 dist/
 coverage/ 
+
+
+firebase-service-account.json

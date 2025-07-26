@@ -7,7 +7,7 @@ import (
     "os"
     "strings"
 
-    "elitecode/firebase"
+    "github.com/IshaanNene/EliteCode-brew/firebase"
     "firebase.google.com/go/v4/auth"
 )
 

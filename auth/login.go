@@ -6,8 +6,7 @@ import (
     "fmt"
     "os"
     "strings"
-
-    "elitecode/firebase"
+    "github.com/IshaanNene/EliteCode-brew/firebase"
 )
 
 func Login() {
@@ -28,15 +27,11 @@ func Login() {
         return
     }
 
-    // Lookup user by email
     user, err := client.GetUserByEmail(context.Background(), email)
     if err != nil {
         fmt.Println("User not found or error occurred.")
         return
     }
 
-    // ⚠️ No password verification is possible with Admin SDK
     fmt.Printf("Welcome back, %s (%s)\n", user.DisplayName, user.Email)
-
-    // Optional: Save login info locally for session (e.g., write to .elitecode/session)
 }
