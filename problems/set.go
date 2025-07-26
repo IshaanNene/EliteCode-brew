@@ -45,7 +45,6 @@ func SetProblem() {
         return
     }
 
-    // Use PromptUI to select problem
     prompt := promptui.Select{
         Label: "Select a problem",
         Items: displayList,
