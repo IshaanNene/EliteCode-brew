@@ -4,9 +4,11 @@ set -euo pipefail
 OWNER="IshaanNene"
 REPO="AlgoRank"
 BRANCH="main"
-FOLDER_PATH="${1:-.}"         # e.g., Problems1
-EXTENSION_FILTER="${2:-}"     # e.g., cpp
+PROBLEM_ID="${1:-.}"           # e.g., Problems1
+EXTENSION_FILTER="${2:-}"      # e.g., cpp
 TARGET_DIR="Problem"
+
+FOLDER_PATH="Problems/$PROBLEM_ID"  # Adjusted to match new repo layout
 
 mkdir -p "$TARGET_DIR"
 

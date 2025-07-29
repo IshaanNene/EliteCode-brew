@@ -4,7 +4,7 @@ set -euo pipefail
 OWNER="IshaanNene"
 REPO="AlgoRank"
 BRANCH="main"
-FOLDER_PATH="${1:-.}"         # e.g., Problems1
+FOLDER_PATH="Problems/${1:-.}"         # e.g., Problems1
 EXTENSION_FILTER="${2:-}"     # e.g., cpp
 TARGET_DIR="Problem"
 
@@ -20,5 +20,12 @@ RAW_DOCKER="https://raw.githubusercontent.com/$OWNER/$REPO/$BRANCH/dockerfiles/$
 echo "Downloading Dockerfile → $TARGET_DIR/Dockerfile"
 curl -sSf "$RAW_DOCKER" -o "$TARGET_DIR/Dockerfile" || {
     echo "Dockerfile not found at $RAW_DOCKER"
+    exit 1
+}
+
+RAW_RUNNER="https://raw.githubusercontent.com/$OWNER/$REPO/$BRANCH/test_runner/test_runner.${EXTENSION_FILTER}"
+echo "Downloading test_runner → $TARGET_DIR/"
+curl -sSf "$RAW_RUNNER" -o "$TARGET_DIR/test_runner.${EXTENSION_FILTER}" || {
+    echo "RAW_RUNNER not found at $RAW_RUNNER"
     exit 1
 }

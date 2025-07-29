@@ -129,6 +129,7 @@ func SetProblem() {
 	}
 
 	// Step 3: Call script with corrected folder name and language
+	if language=="python"{language="py"}
 	cmd := exec.Command("bash", scriptPath, folder, language)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

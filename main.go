@@ -47,7 +47,7 @@ func main() {
 
     var runCmd = &cobra.Command{
         Use:   "run",
-        Short: "Run the program",
+        Short: "Run the program to verify execution with three testcases",
         Run: func(_ *cobra.Command, _ []string) {
             problemID := problems.GetProblemID()
             lang := problems.GetSelectedLanguage()
@@ -59,7 +59,20 @@ func main() {
         },
     }
 
-    rootCmd.AddCommand(signupCmd, loginCmd, problemsCmd, setProblemCmd, runCmd)
+    var submitCmd = &cobra.Command{
+        Use:   "submit",
+        Short: "submit the program with more testcases",
+        Run: func(_ *cobra.Command, _ []string) {
+            problemID := problems.GetProblemID()
+            lang := problems.GetSelectedLanguage()
+            if problemID == "" || lang == "" {
+                fmt.Println("Please select a problem and language first using `elitecode set_problem`")
+                return
+            }
+            cmdpkg.Submit()
+        },
+    }
+    rootCmd.AddCommand(signupCmd, loginCmd, problemsCmd, setProblemCmd, runCmd,submitCmd)
 
     if err := rootCmd.Execute(); err != nil {
         fmt.Println(err)
